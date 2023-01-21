@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_host"
+    app:startDestination="@id/mainActivity">
+
+    <activity
+        android:id="@+id/mainActivity"
+        android:name="com.onursedef.paymentpos.MainActivity"
+        android:label="activity_main"
+        tools:layout="@layout/activity_main" />
+    <activity
+        android:id="@+id/paymentSelectionActivity"
+        android:name="com.onursedef.paymentpos.PaymentSelectionActivity"
+        android:label="PaymentSelectionActivity" />
+    <activity
+        android:id="@+id/QRCodeApprove"
+        android:name="com.onursedef.paymentpos.QRCodeApprove"
+        android:label="QRCodeApprove" />
+    <activity
+        android:id="@+id/waitingForApprove"
+        android:name="com.onursedef.paymentpos.WaitingForApprove"
+        android:label="WaitingForApprove" />
+    <activity
+        android:id="@+id/failed"
+        android:name="com.onursedef.paymentpos.Failed"
+        android:label="Failed" />
+    <activity
+        android:id="@+id/success"
+        android:name="com.onursedef.paymentpos.Success"
+        android:label="Success" />
+</navigation>

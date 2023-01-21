@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">PaymentPos</string>
+    <string name="namePlaceholder">Product Name</string>
+    <string name="pricePlaceholder">19.98</string>
+    <string name="product_price">Product Price</string>
+    <string name="send">Send</string>
+    <string name="waitingText">Please choose a payment optiion</string>
+    <string name="qr_code">QR Code</string>
+    <string name="bank">Bank</string>
+    <string name="productName">Product Name</string>
+    <string name="productPrice">198.8 $</string>
+    <string name="transcation_complete">Transcation Complete</string>
+</resources>
