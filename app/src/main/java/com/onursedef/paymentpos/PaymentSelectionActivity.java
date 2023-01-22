@@ -3,56 +3,28 @@ package com.onursedef.paymentpos;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.net.URI;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import io.socket.client.IO;
-import io.socket.client.Socket;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.Socket;
 
 public class PaymentSelectionActivity extends AppCompatActivity {
-
-    URI wsUri = URI.create("http://192.168.1.8:3000");
-    Socket mSocket = IO.socket(wsUri);
 
     TextView productNamePlaceholder;
     TextView productPricePlaceholder;
     Button QrCodeButton;
     Button BankButton;
 
+    Socket socket;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.payment_selection);
-
-        mSocket.connect();
-
-        mSocket.on(Socket.EVENT_CONNECT, args -> {
-            Log.i("websocket", "client connected");
-        });
-
-        mSocket.on(Socket.EVENT_CONNECT_ERROR, args -> {
-            Log.e("websocket", "couldn't connect");
-        });
-
-        mSocket.on(Socket.EVENT_DISCONNECT, args -> {
-            String json = "{\"type\": \"BANK_DECLINED\"}";
-
-            mSocket.send(json);
-
-            Intent intent = new Intent(PaymentSelectionActivity.this, Failed.class);
-            startActivity(intent);
-            mSocket.close();
-        });
 
         String productName = getIntent().getStringExtra("name");
         String productPrice = getIntent().getStringExtra("price");
@@ -78,16 +50,46 @@ public class PaymentSelectionActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        new ConnectTask().execute();
+
         BankButton.setOnClickListener(view -> {
+
             QrCodeButton.setEnabled(false);
             BankButton.setEnabled(false);
 
-            String transcationStart = "{\"type\": \"BANK_APPROVE_PENDING\", \"name\": \"" + productName + "\",\"price\": " + productPrice + ", \"code\": \"" + productCode + "\"}";
+            String transactionStart = "{\"type\": \"BANK_APPROVE_PENDING\", \"name\": \"" + productName + "\",\"price\": " + productPrice + ", \"code\": \"" + productCode + "\"}";
 
-            mSocket.send(transcationStart);
+            new SendTask().execute(transactionStart);
 
             Intent intent = new Intent(PaymentSelectionActivity.this, WaitingForApprove.class);
             startActivity(intent);
         });
+    }
+
+    class ConnectTask extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected Void doInBackground(Void... voids) {
+            try {
+                // Create a new socket and connect to the server
+                socket = new Socket("192.168.1.8", 8000);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+    }
+
+    class SendTask extends AsyncTask<String, Void, Void> {
+        @Override
+        protected Void doInBackground(String... messages) {
+            try {
+                // Send data to the server
+                OutputStream outputStream = socket.getOutputStream();
+                outputStream.write(messages[0].getBytes());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
     }
 }

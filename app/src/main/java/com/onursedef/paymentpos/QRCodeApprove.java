@@ -2,6 +2,7 @@ package com.onursedef.paymentpos;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.ComponentName;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Point;
@@ -13,10 +14,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.zxing.WriterException;
-import com.google.zxing.qrcode.QRCodeWriter;
-import com.google.zxing.qrcode.encoder.QRCode;
-
 import java.net.URI;
 
 import androidmads.library.qrgenearator.QRGContents;
@@ -25,9 +22,6 @@ import io.socket.client.IO;
 import io.socket.client.Socket;
 
 public class QRCodeApprove extends AppCompatActivity {
-
-    URI wsUri = URI.create("http://192.168.1.8:3000");
-    Socket mSocket = IO.socket(wsUri);
 
     ImageView qrCode;
     TextView productNameText;
@@ -42,26 +36,6 @@ public class QRCodeApprove extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.qr_code_approve);
-
-        mSocket.connect();
-
-        mSocket.on(Socket.EVENT_CONNECT, args -> {
-            Log.i("websocket", "client connected");
-        });
-
-        mSocket.on(Socket.EVENT_CONNECT_ERROR, args -> {
-            Log.e("websocket", "couldn't connect");
-        });
-
-        mSocket.on(Socket.EVENT_DISCONNECT, args -> {
-            String json = "{\"type\": \"QRCODE_DECLINED\"}";
-
-            mSocket.send(json);
-
-            Intent intent = new Intent(QRCodeApprove.this, Failed.class);
-            startActivity(intent);
-            mSocket.close();
-        });
 
         String productName = getIntent().getStringExtra("name");
         String productPrice = getIntent().getStringExtra("price");
@@ -102,20 +76,17 @@ public class QRCodeApprove extends AppCompatActivity {
         qrCode.setImageBitmap(bitmap);
 
         acceptButton.setOnClickListener(view -> {
-            String json = "{\"type\": \"QRCODE_APPROVED\", \"name\": \"" + productName + "\", \"price\": " + productPrice + ", \"code\": \"" + productCode + "\" }";
 
-            mSocket.send(json);
 
-            Intent intent = new Intent(QRCodeApprove.this, Success.class);
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setComponent(new ComponentName("com.onursedef.salepos", "com.onursedef.salepos.Success"));
             startActivity(intent);
         });
 
         declineButton.setOnClickListener(view -> {
-            String json = "{\"type\": \"QRCODE_DECLINED\", \"name\": \"" + productName + "\", \"price\": " + productPrice + ", \"code\": \"" + productCode + "\" }";
 
-            mSocket.send(json);
-
-            Intent intent = new Intent(QRCodeApprove.this, Failed.class);
+            Intent intent = new Intent(Intent.CATEGORY_ALTERNATIVE);
+            intent.setComponent(new ComponentName("com.onursedef.salepos", "com.onursedef.salepos.Failure"));
             startActivity(intent);
         });
     }
